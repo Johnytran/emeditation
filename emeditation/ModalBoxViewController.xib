@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14460.20"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="ModalBoxViewController">
+            <connections>
+                <outlet property="popView" destination="Rxk-f6-rvF" id="lwu-LJ-0jf"/>
+                <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="i5M-Pr-FkT">
+            <rect key="frame" x="0.0" y="0.0" width="269" height="237"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Rxk-f6-rvF">
+                    <rect key="frame" x="0.0" y="0.0" width="269" height="237"/>
+                    <subviews>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Connect a Device" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="wwy-W3-XcV">
+                            <rect key="frame" x="0.0" y="19" width="269" height="31"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="31" id="mCV-pU-bjb"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" type="boldSystem" pointSize="18"/>
+                            <color key="textColor" red="0.14821982383728027" green="0.25562137365341187" blue="0.60450738668441772" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Please turn on your Brain sensor device and enable its Bluetooth." lineBreakMode="tailTruncation" numberOfLines="4" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="olO-cr-GYb">
+                            <rect key="frame" x="32" y="71" width="215" height="62"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="62" id="iPy-i7-scN"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                            <nil key="textColor"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uCF-4S-EuQ">
+                            <rect key="frame" x="32" y="174" width="207" height="31"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="31" id="FYl-3F-LbA"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                            <state key="normal" title="Next" backgroundImage="next_connect_button">
+                                <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </state>
+                            <connections>
+                                <action selector="nextButton:" destination="-1" eventType="touchUpInside" id="Eug-US-QRu"/>
+                            </connections>
+                        </button>
+                    </subviews>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="269" id="1lY-iM-CX9"/>
+                        <constraint firstAttribute="trailing" secondItem="wwy-W3-XcV" secondAttribute="trailing" id="CaF-HU-hjc"/>
+                        <constraint firstItem="olO-cr-GYb" firstAttribute="leading" secondItem="Rxk-f6-rvF" secondAttribute="leading" constant="32" id="Fwg-s0-Jmd"/>
+                        <constraint firstItem="olO-cr-GYb" firstAttribute="top" secondItem="wwy-W3-XcV" secondAttribute="bottom" constant="21" id="QsF-Ms-rw7"/>
+                        <constraint firstItem="wwy-W3-XcV" firstAttribute="top" secondItem="Rxk-f6-rvF" secondAttribute="top" constant="19" id="bRh-F8-gvJ"/>
+                        <constraint firstItem="wwy-W3-XcV" firstAttribute="leading" secondItem="Rxk-f6-rvF" secondAttribute="leading" id="cdU-4r-RbZ"/>
+                        <constraint firstAttribute="trailing" secondItem="uCF-4S-EuQ" secondAttribute="trailing" constant="30" id="evL-eh-gf2"/>
+                        <constraint firstAttribute="height" constant="237" id="hai-hn-4gu"/>
+                        <constraint firstItem="uCF-4S-EuQ" firstAttribute="leading" secondItem="Rxk-f6-rvF" secondAttribute="leading" constant="32" id="iQI-N7-6wR"/>
+                        <constraint firstItem="uCF-4S-EuQ" firstAttribute="top" secondItem="olO-cr-GYb" secondAttribute="bottom" constant="41" id="vEV-ZL-0KA"/>
+                        <constraint firstAttribute="trailing" secondItem="olO-cr-GYb" secondAttribute="trailing" constant="22" id="x6b-T5-nqU"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstItem="Rxk-f6-rvF" firstAttribute="leading" secondItem="Q5M-cg-NOt" secondAttribute="leading" id="1Hz-gR-Aad"/>
+                <constraint firstItem="Rxk-f6-rvF" firstAttribute="top" secondItem="Q5M-cg-NOt" secondAttribute="top" id="FMN-xD-xjw"/>
+            </constraints>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <viewLayoutGuide key="safeArea" id="Q5M-cg-NOt"/>
+            <point key="canvasLocation" x="84" y="-88.605697151424295"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="next_connect_button" width="609" height="100"/>
+    </resources>
+</document>

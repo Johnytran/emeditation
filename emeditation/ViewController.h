@@ -7,9 +7,14 @@
 //
 
 #import <UIKit/UIKit.h>
+@import Firebase;
+@import GoogleSignIn;
 
-@interface ViewController : UIViewController
-
+@interface ViewController : UIViewController<GIDSignInUIDelegate>
+@property (weak, nonatomic) IBOutlet GIDSignInButton *signInBUtton;
+- (IBAction)SignInGoogle:(id)sender;
+- (IBAction)AddAccount:(id)sender;
+@property (weak, nonatomic) IBOutlet UILabel *logoLabel;
 
 @end
 
