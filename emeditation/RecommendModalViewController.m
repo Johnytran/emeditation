@@ -283,6 +283,7 @@
 }
 
 - (IBAction)closeRecommend:(id)sender {
+    [self.player stop];
     [self removeAnimate];
 }
 

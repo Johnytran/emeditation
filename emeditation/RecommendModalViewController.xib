@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
-    <device id="retina4_0" orientation="portrait">
-        <adaptation id="fullscreen"/>
-    </device>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_0" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14460.20"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -25,16 +23,16 @@
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bg_recommend.png" translatesAutoresizingMaskIntoConstraints="NO" id="bTd-ov-WRV">
-                    <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                    <rect key="frame" x="0.0" y="-20" width="320" height="588"/>
                 </imageView>
                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="sf7-L0-Pff">
-                    <rect key="frame" x="3" y="3" width="314" height="63"/>
+                    <rect key="frame" x="3" y="-17" width="314" height="63"/>
                     <constraints>
                         <constraint firstAttribute="height" constant="63" id="ik3-am-e2f"/>
                     </constraints>
                 </imageView>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Pdf-jb-4Kp">
-                    <rect key="frame" x="59" y="60" width="202" height="38"/>
+                    <rect key="frame" x="59" y="40" width="202" height="38"/>
                     <subviews>
                         <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icon_music" translatesAutoresizingMaskIntoConstraints="NO" id="WSg-X4-uej">
                             <rect key="frame" x="0.0" y="10" width="16" height="19"/>
@@ -62,15 +60,15 @@
                     </constraints>
                 </view>
                 <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="EtV-iy-CIc">
-                    <rect key="frame" x="6" y="114" width="308" height="392"/>
+                    <rect key="frame" x="6" y="94" width="308" height="412"/>
                     <subviews>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="rgI-6C-syq">
                             <rect key="frame" x="0.0" y="8" width="308" height="456"/>
                             <subviews>
                                 <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="songCell" translatesAutoresizingMaskIntoConstraints="NO" id="kYF-xh-ctD">
-                                    <rect key="frame" x="0.0" y="0.0" width="308" height="44"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="0.0" height="43.5"/>
                                     <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="kYF-xh-ctD" id="KEz-St-59P">
-                                        <rect key="frame" x="0.0" y="0.0" width="308" height="43.5"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="0.0" height="43.5"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                     </tableViewCellContentView>
                                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -93,9 +91,7 @@
                                 <constraint firstAttribute="bottom" secondItem="pSs-YZ-HFL" secondAttribute="bottom" constant="76" id="beo-Qf-m6x"/>
                                 <constraint firstAttribute="height" constant="456" id="iDD-yJ-dEm"/>
                                 <constraint firstItem="pSs-YZ-HFL" firstAttribute="leading" secondItem="rgI-6C-syq" secondAttribute="leading" id="m14-bC-7Vd"/>
-                                <constraint firstAttribute="trailing" secondItem="kYF-xh-ctD" secondAttribute="trailing" id="pq3-A3-w4E"/>
                                 <constraint firstAttribute="trailing" secondItem="pSs-YZ-HFL" secondAttribute="trailing" id="wYi-ck-JlL"/>
-                                <constraint firstItem="kYF-xh-ctD" firstAttribute="leading" secondItem="rgI-6C-syq" secondAttribute="leading" id="zj0-7x-uhZ"/>
                                 <constraint firstItem="pSs-YZ-HFL" firstAttribute="top" secondItem="rgI-6C-syq" secondAttribute="top" constant="8" id="zlm-gC-YdD"/>
                             </constraints>
                         </view>

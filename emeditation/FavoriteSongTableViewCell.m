@@ -9,7 +9,7 @@
 #import "FavoriteSongTableViewCell.h"
 
 @implementation FavoriteSongTableViewCell
-@synthesize songTitle, playButton, isPlayed, currentSong, parentController, scoreLabel, beingPlay, indexPath, parentTabController;
+@synthesize songTitle, playButton, isPlayed, currentSong, parentController, scoreLabel, beingPlay, indexPath, parentTabController, durationLabel;
 - (void)awakeFromNib {
     [super awakeFromNib];
     self.isPlayed = NO;
@@ -28,8 +28,9 @@
     self.parentTabController.selectedIndex = index;
     
     FavoriteMusicViewController *parent = (FavoriteMusicViewController *)self.parentController;
-    [[parent player] stop];
     [parent stopAllCellNonExcep];
+    [[parent player] stop];
+    
     
     AppDelegate *delegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
     NSMutableDictionary *myProfile = delegate.myProfile;

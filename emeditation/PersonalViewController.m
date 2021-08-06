@@ -472,8 +472,8 @@
 - (IBAction)updateProfile:(id)sender {
     
     // for the previous profile
-    AppDelegate *delegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-    delegate.myProfile = self.tmpBackgroundProfile;
+//    AppDelegate *delegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+//    delegate.myProfile = self.tmpBackgroundProfile;
     
     // then it will be update for the new selection
     NSMutableDictionary *myBackground = [[NSMutableDictionary alloc] init];

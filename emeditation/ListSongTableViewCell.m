@@ -9,13 +9,11 @@
 #import "ListSongTableViewCell.h"
 
 @implementation ListSongTableViewCell
-@synthesize parentController, playButton, meditationButton, currentSong, loadingImageView, indexPath, parentTabController, beingPlay, isSubPlayed;
+@synthesize parentController, playButton, meditationButton, currentSong, loadingImageView, indexPath, beingPlay, isSubPlayed, parentTabController, shortDescriptionTextare;
 - (void)awakeFromNib {
     [super awakeFromNib];
-    // loading animation image for waiting song
-    FLAnimatedImage *loadingImage = [[FLAnimatedImage alloc] initWithAnimatedGIFData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"loading_buffer" ofType:@"gif"]]];
-    
-    self.loadingImageView.animatedImage = loadingImage;
+    self.shortDescriptionTextare.layer.cornerRadius = 5;
+
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {
@@ -89,6 +87,22 @@
     
 }
 
+- (IBAction)Intro:(id)sender {
+    MusicViewController *parent = (MusicViewController*)self.parentController;
+    
+    if ([parent.expandedCells containsObject:indexPath])
+    {
+        [parent.expandedCells removeObject:indexPath];
+    }
+    else
+    {
+        [parent.expandedCells addObject:indexPath];
+    }
+    
+    [parent.listSongTableView beginUpdates];
+    [parent.listSongTableView endUpdates];
+}
+
 - (IBAction)chooseThis:(id)sender {
     int index = 1; // home view controller
     self.parentTabController.selectedIndex = index;
@@ -99,6 +113,10 @@
     AppDelegate *delegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
     NSMutableDictionary *myProfile = delegate.myProfile;
     [myProfile setObject:self.currentSong forKey:@"song"];
+    
+//    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+//    ViewController *homeViewController = [storyboard instantiateViewControllerWithIdentifier:@"HomeViewController"];
+//    [self.parentController presentViewController:homeViewController animated:true completion:nil];
    
     [self.parentTabController.viewControllers[index] popToRootViewControllerAnimated:YES];
     

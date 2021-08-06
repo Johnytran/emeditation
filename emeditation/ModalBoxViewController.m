@@ -13,12 +13,12 @@
 @end
 
 @implementation ModalBoxViewController
-@synthesize popView;
+@synthesize contentView, parentController;
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.popView.layer.cornerRadius = 10;
-    self.popView.layer.shadowOpacity = 0.8;
-    self.popView.layer.shadowOffset = CGSizeMake(0.0f, 0.0f);
+    self.contentView.layer.cornerRadius = 10;
+    self.contentView.layer.shadowOpacity = 0.8;
+    self.contentView.layer.shadowOffset = CGSizeMake(0.0f, 0.0f);
     [self showAnimate];
     
 }
@@ -43,13 +43,36 @@
         }
     }];
 }
-- (void) showView: (UIView *) parentView withFrame: (CGRect) frame{
-    [self.view setFrame: frame];
-    [parentView addSubview:self.view];
+-(void)getParentController: (StartSessionViewController*) parent{
+    self.parentController = parent;
 }
 
 
-- (IBAction)nextButton:(id)sender {
+- (IBAction)likeSong:(id)sender {
+    StartSessionViewController *parent = (StartSessionViewController*)self.parentController;
+    [parent setIsLike:1];
     [self removeAnimate];
+    [parent processRecommend];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [parent.navigationController popToRootViewControllerAnimated:YES];
+    });
+    
+}
+
+- (IBAction)disLikeSong:(id)sender {
+    StartSessionViewController *parent = (StartSessionViewController*)self.parentController;
+    [parent setIsLike:0];
+    [self removeAnimate];
+    [parent processRecommend];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [parent.navigationController popToRootViewControllerAnimated:YES];
+    });
+}
+
+- (void) showView: (CGRect) frame{
+    
+    [self.view setFrame: frame];
+    //[parentView addSubview:self.view];
+    [[self.parentController view] addSubview:self.view];
 }
 @end

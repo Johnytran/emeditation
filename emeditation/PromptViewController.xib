@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="16096" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16086"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="PromptViewController">
+            <connections>
+                <outlet property="lblText" destination="AMy-o5-ksc" id="stS-1W-3mr"/>
+                <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="i5M-Pr-FkT">
+            <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="text" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AMy-o5-ksc">
+                    <rect key="frame" x="20" y="76" width="374" height="96"/>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="96" id="NAn-8P-POe"/>
+                    </constraints>
+                    <fontDescription key="fontDescription" type="system" pointSize="18"/>
+                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="BS5-IJ-aeR">
+                    <rect key="frame" x="269" y="211" width="125" height="32"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="125" id="Hwm-Kt-pUs"/>
+                        <constraint firstAttribute="height" constant="32" id="YKp-6k-VmV"/>
+                    </constraints>
+                    <state key="normal" title="Cancel" backgroundImage="start">
+                        <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    </state>
+                    <connections>
+                        <action selector="CancelDownload:" destination="-1" eventType="touchUpInside" id="Htf-EM-m5V"/>
+                    </connections>
+                </button>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cI7-La-jGQ">
+                    <rect key="frame" x="20" y="211" width="125" height="32"/>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="125" id="MDv-DQ-gu3"/>
+                        <constraint firstAttribute="height" constant="32" id="suX-ve-TZl"/>
+                    </constraints>
+                    <state key="normal" title="OK" backgroundImage="start">
+                        <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    </state>
+                    <connections>
+                        <action selector="PerformDownload:" destination="-1" eventType="touchUpInside" id="aRT-Xv-MbZ"/>
+                    </connections>
+                </button>
+            </subviews>
+            <color key="backgroundColor" systemColor="systemPurpleColor" red="0.68627450980000004" green="0.32156862749999998" blue="0.87058823529999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <constraints>
+                <constraint firstItem="AMy-o5-ksc" firstAttribute="top" secondItem="Q5M-cg-NOt" secondAttribute="top" constant="32" id="1yD-om-Fqf"/>
+                <constraint firstItem="Q5M-cg-NOt" firstAttribute="trailing" secondItem="BS5-IJ-aeR" secondAttribute="trailing" constant="20" id="874-vz-b3h"/>
+                <constraint firstItem="AMy-o5-ksc" firstAttribute="leading" secondItem="Q5M-cg-NOt" secondAttribute="leading" constant="20" id="CSi-u3-pCx"/>
+                <constraint firstItem="cI7-La-jGQ" firstAttribute="top" secondItem="AMy-o5-ksc" secondAttribute="bottom" constant="39" id="eZy-oy-oHO"/>
+                <constraint firstItem="cI7-La-jGQ" firstAttribute="leading" secondItem="Q5M-cg-NOt" secondAttribute="leading" constant="20" id="h61-np-yll"/>
+                <constraint firstItem="Q5M-cg-NOt" firstAttribute="trailing" secondItem="AMy-o5-ksc" secondAttribute="trailing" constant="20" id="sMX-sM-Ig6"/>
+                <constraint firstItem="BS5-IJ-aeR" firstAttribute="top" secondItem="AMy-o5-ksc" secondAttribute="bottom" constant="39" id="vLg-Bb-FpS"/>
+            </constraints>
+            <viewLayoutGuide key="safeArea" id="Q5M-cg-NOt"/>
+            <point key="canvasLocation" x="137.68115942028987" y="114.50892857142857"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="start" width="200" height="39"/>
+    </resources>
+</document>

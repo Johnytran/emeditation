@@ -13,9 +13,16 @@
 @end
 
 @implementation UserProfileViewController
-@synthesize userImageButton, heightContentView, userNameLabel, stRef;
+@synthesize userImageButton, heightContentView, userNameLabel, stRef, appDelegate;
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    self.appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    if(self.appDelegate.isGuest){
+        self.appDelegate.isGuest = 0;
+       [self dismissViewControllerAnimated:YES completion:nil];
+    }
+    
     self.stRef = [[FIRStorage storage] reference];
     
     FIRUser *user = [FIRAuth auth].currentUser;
@@ -56,7 +63,9 @@
         NSLog(@"Error signing out: %@", signOutError);
         return;
     }
-    [[GIDSignIn sharedInstance] signOut];
+    self.appDelegate.isGuest = 0;
+    //[[GIDSignIn sharedInstance] signOut];
+    
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 - (IBAction)UpdatePhotoAction:(id)sender {
@@ -74,7 +83,7 @@
     if (chosenImage != nil)
     {
         FIRStorage *storage = [FIRStorage storage];
-        self.stRef = [storage referenceForURL:@"gs://meditation-f0fd5.appspot.com/user"];
+        self.stRef = [storage referenceForURL:@"gs://meditationtemple-26f80.appspot.com/user"];
         NSString *imageID = [[NSUUID UUID] UUIDString];
         NSString *imageName = [NSString stringWithFormat:@"ProfilePictures/%@.jpg",imageID];
         FIRStorageReference *profilePicRef = [self.stRef child:imageName];

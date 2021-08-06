@@ -7,14 +7,19 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "StartSessionViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ModalBoxViewController : UIViewController
-- (IBAction)nextButton:(id)sender;
 - (void)removeAnimate;
-@property (weak, nonatomic) IBOutlet UIView *popView;
-- (void) showView: (UIView *) parentView  withFrame: (CGRect) frame;
+@property (weak, nonatomic) IBOutlet UIView *contentView;
+
+- (IBAction)likeSong:(id)sender;
+- (IBAction)disLikeSong:(id)sender;
+-(void)getParentController: (UIViewController*) parent;
+@property UIViewController *parentController;
+- (void) showView: (CGRect) frame;
 @end
 
 NS_ASSUME_NONNULL_END

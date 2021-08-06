@@ -16,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FavoriteSongTableViewCell : UITableViewCell
 @property (weak, nonatomic) IBOutlet UILabel *songTitle;
 @property (weak, nonatomic) IBOutlet UILabel *scoreLabel;
+@property (weak, nonatomic) IBOutlet UILabel *durationLabel;
 
 @property (weak, nonatomic) IBOutlet UIButton *playButton;
 

@@ -17,7 +17,8 @@
 @end
 
 @implementation MusicViewController
-@synthesize albumCollection, listSongTableView, loadingView, songByAlbumIDArray, numberAlbumDisplay, songArtistLabel, songTitleLabel, isPlayed, playMainButton, player, selectedPlayButton, loadingImageSubView, indexPlaying, nexMusicButton, preMusicButton, percentLoadingAlbumLabel, musicData, downloadSongSize, refModalController, managedContext, arrayAlbumCoreData;
+@synthesize albumCollection, listSongTableView, loadingView, songByAlbumIDArray, numberAlbumDisplay, songArtistLabel, songTitleLabel, isPlayed, playMainButton, player, selectedPlayButton, loadingImageSubView, indexPlaying, nexMusicButton, preMusicButton, percentLoadingAlbumLabel, musicData, downloadSongSize, refModalController, managedContext, arrayAlbumCoreData, refPromptController, refDataSongDownload, expandedCells;
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     // a flag for turn on music player
@@ -29,20 +30,34 @@
     // set number album display
     self.numberAlbumDisplay = 7;
     
-    // loading background animation image
-    FLAnimatedImage *loadingImage = [[FLAnimatedImage alloc] initWithAnimatedGIFData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"loading_album" ofType:@"gif"]]];
-   
-    self.loadingView.animatedImage = loadingImage;
     self.loadingView.layer.zPosition = 1;
     
     _albumList.type = iCarouselTypeCoverFlow2;
     
     self.albumCollection = [[NSMutableArray alloc] init];
+    self.expandedCells = [[NSMutableArray alloc] init];
     self.songByAlbumIDArray = [[NSMutableArray alloc] init];
     self.arrayAlbumCoreData = [[NSMutableArray alloc] init];
     [self getListAlbum];
     
+    
 }
+
+- (CGFloat)carouselItemWidth:(iCarousel *)carousel{
+
+    UIInterfaceOrientation interfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+    if (UIInterfaceOrientationIsPortrait(interfaceOrientation))
+    {
+        //Handle and return as per your image
+        return 200; //return value that is equal or higher than your CarouselItemView width
+    }
+    else
+    {
+        //Handle and return as per your image
+        return 300; //return value that is equal or higher than your CarouselItemView width
+    }
+}
+
 - (void)stopAllCell: (NSIndexPath*)exceptIndex{
     if([self.songByAlbumIDArray count] >0){
         
@@ -61,8 +76,40 @@
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveResponse:(NSURLResponse *)response completionHandler:(void (^)(NSURLSessionResponseDisposition disposition))completionHandler {
     completionHandler(NSURLSessionResponseAllow);
     self.downloadSongSize = [response expectedContentLength];
+    float fileSize = (float)self.downloadSongSize/1024.0f/1024.0f;
+    NSString *msg = [NSString stringWithFormat:@"The file size is %f Mb. It has to be downloaded before using. Do you want to continue?", fileSize];
+    [self showMessage:msg];
+    //NSLog(@"data size: %f ",  (float)self.downloadSongSize/1024.0f/1024.0f);
     self.musicData = [[NSMutableData alloc] init];
+    self.refDataSongDownload = dataTask;
+    [dataTask suspend];
 }
+- (void)PerformDownload{
+    [self.refDataSongDownload resume];
+    
+    PromptViewController *checkPromptController = (PromptViewController*)self.refPromptController;
+    if(checkPromptController!=nil){
+        [checkPromptController removeAnimate];
+    }
+    
+    if(refModalController!=nil){
+        [self.refModalController removeAnimate];
+    }
+    self.refModalController = [[ProgressModalViewController alloc] initWithNibName:@"ProgressModalViewController" bundle:nil];
+    CGFloat widthScreen = self.view.frame.size.width;
+    CGFloat heightScreen = self.view.frame.size.height;
+
+    [self.refModalController showView:self.view withFrame:CGRectMake(0, heightScreen-260, widthScreen, 260)];
+    
+}
+-(void)CancelDownload{
+    [self.refDataSongDownload cancel];
+    PromptViewController *checkPromptController = (PromptViewController*)self.refPromptController;
+    if(checkPromptController!=nil){
+        [checkPromptController removeAnimate];
+    }
+}
+
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data{
     [self.musicData appendData:data];
     NSUInteger dataDownload = [self.musicData length];
@@ -98,11 +145,51 @@
         }
     }
 }
+-(void)showMessage:(NSString*) heading{
+    
+    PromptViewController *checkPromptController = (PromptViewController*)self.refPromptController;
+    if(checkPromptController!=nil){
+        [checkPromptController removeAnimate];
+    }
+    
+    PromptViewController *tmpPromptController = [[PromptViewController alloc] initWithNibName:@"PromptViewController" bundle:nil];
+    
+    self.refPromptController = (PromptViewController*)tmpPromptController;
+    
+    CGFloat widthScreen = self.view.frame.size.width;
+    CGFloat heightScreen = self.view.frame.size.height;
+    tmpPromptController.parentController = self;
+    tmpPromptController.textContent = heading;
+    [tmpPromptController showView:CGRectMake(widthScreen/2-150,heightScreen/2-125, 300, 250)];
+}
+
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id <UIViewControllerTransitionCoordinator>)coordinator
+{
+    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+    
+    // Code here will execute before the rotation begins.
+    // Equivalent to placing it in the deprecated method -[willRotateToInterfaceOrientation:duration:]
+    
+    [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        
+        // Place code here to perform animations during the rotation.
+        // You can pass nil or leave this block empty if not necessary.
+        
+    } completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        
+        // Code here will execute after the rotation has finished.
+        // Equivalent to placing it in the deprecated method -[didRotateFromInterfaceOrientation:]
+        PromptViewController *checkPromptController = (PromptViewController*)self.refPromptController;
+        if(checkPromptController!=nil){
+            [checkPromptController removeAnimate];
+        }
+    }];
+}
+
+
 - (void) PlayMusic: (NSString*) urlString{
     
-    if(refModalController!=nil){
-        [self.refModalController removeAnimate];
-    }
+    
     
     _documentsDirectoryPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
     _theFileName = [[urlString lastPathComponent] stringByDeletingPathExtension];
@@ -118,11 +205,7 @@
         NSLog(@"file doesn't exist");
         //save Image From URL
         
-        self.refModalController = [[ProgressModalViewController alloc] initWithNibName:@"ProgressModalViewController" bundle:nil];
-        CGFloat widthScreen = self.view.frame.size.width;
-        CGFloat heightScreen = self.view.frame.size.height;
-        
-        [self.refModalController showView:self.view withFrame:CGRectMake(0, heightScreen-260, widthScreen, 260)];
+
         
         NSURLSessionConfiguration *defaultConfigObject = [NSURLSessionConfiguration defaultSessionConfiguration];
         
@@ -416,7 +499,17 @@
 }
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    return 85;
+    CGFloat kExpandedCellHeight = 200;
+    CGFloat kNormalCellHeigh = 85;
+
+    if ([self.expandedCells containsObject:indexPath])
+    {
+        return kExpandedCellHeight; //It's not necessary a constant, though
+    }
+    else
+    {
+        return kNormalCellHeigh; //Again not necessary a constant
+    }
 }
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView{
     return 1;
@@ -437,7 +530,7 @@
     bgColorView.backgroundColor = [UIColor colorWithRed:0.23 green:0.18 blue:0.64 alpha:0.6];
     [cell setSelectedBackgroundView:bgColorView];
     [cell.duration setText:[aSong duration]];
-    
+    [cell.shortDescriptionTextare setText:[aSong introtext]];
     [cell getParentController:self];
     [cell setCurrentSong:aSong];
     [cell setIndexPath:indexPath];
@@ -461,6 +554,7 @@
             [self.songArtistLabel setText:artistName];
         }];
     }
+    
     
     
 }
@@ -510,6 +604,7 @@
                     NSString *songLink = [snapshot.value objectForKey:@"link"];
                     NSString *artistID = [snapshot.value objectForKey:@"artistID"];
                     NSString *duration = [snapshot.value objectForKey:@"duration"];
+                    NSString *introtext = [snapshot.value objectForKey:@"introtext"];
                     
                     //NSLog(@"songlink: %@", songLink);
                     
@@ -519,6 +614,7 @@
                     [aSong setSongLink:songLink];
                     [aSong setArtistID:artistID];
                     [aSong setDuration:duration];
+                    [aSong setIntrotext:introtext];
                     
                     // add this song to array list
                     [self.songByAlbumIDArray addObject:aSong];
@@ -544,11 +640,7 @@
     
     return view;
 }
-- (CGFloat)carouselItemWidth:(iCarousel *)carousel
-{
-    //usually this should be slightly wider than the item views
-    return 200;
-}
+
 - (BOOL)carouselShouldWrap:(iCarousel *)carousel
 {
     //wrap all carousels

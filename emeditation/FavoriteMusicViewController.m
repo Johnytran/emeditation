@@ -155,6 +155,7 @@
             score = [[aSong songScore] floatValue];
         
         [cell.scoreLabel setText:[NSString stringWithFormat:@"Score: %.1f %%", score*100]];
+        [cell.durationLabel setText:[aSong duration]];
         // change selected row background
         UIView *bgColorView = [[UIView alloc] init];
         bgColorView.backgroundColor = [UIColor colorWithRed:0.23 green:0.18 blue:0.64 alpha:1.0];
@@ -166,6 +167,14 @@
 
 - (void) PlayMusic: (NSString*) urlString{
     
+    AVAudioSession *session = [AVAudioSession sharedInstance];
+
+    NSError *setCategoryError = nil;
+    if (![session setCategory:AVAudioSessionCategoryPlayback
+             withOptions:AVAudioSessionCategoryOptionMixWithOthers
+             error:&setCategoryError]) {
+        // handle error
+    }
     
     _documentsDirectoryPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
     _theFileName = [[urlString lastPathComponent] stringByDeletingPathExtension];

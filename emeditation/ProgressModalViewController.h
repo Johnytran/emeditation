@@ -7,13 +7,12 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "FLAnimatedImage.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ProgressModalViewController : UIViewController
 @property (weak, nonatomic) IBOutlet UILabel *dowloadingLabel;
-@property (weak, nonatomic) IBOutlet FLAnimatedImageView *percentImageView;
+@property (weak, nonatomic) IBOutlet UIImageView *percentImageView;
 - (void) showView: (UIView *) parentView withFrame: (CGRect) frame;
 - (void)removeAnimate;
 @end

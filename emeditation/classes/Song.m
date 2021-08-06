@@ -9,6 +9,6 @@
 #import "Song.h"
 
 @implementation Song
-@synthesize songName, songLink, songID, duration, artistID, songScore;
+@synthesize songName, songLink, songID, duration, artistID, songScore, introtext;
 
 @end

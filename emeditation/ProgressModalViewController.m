@@ -16,11 +16,7 @@
 @synthesize dowloadingLabel, percentImageView;
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
-    //animate percent loading
-    FLAnimatedImage *loadingImage = [[FLAnimatedImage alloc] initWithAnimatedGIFData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"progress-loader" ofType:@"gif"]]];
-    
-    self.percentImageView.animatedImage = loadingImage;
+
 }
 - (void) showView: (UIView *) parentView withFrame: (CGRect) frame{
     [self.view setFrame: frame];

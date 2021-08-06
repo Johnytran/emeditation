@@ -63,6 +63,16 @@
 }
 
 - (IBAction)quickListen:(id)sender {
+    
+    AVAudioSession *session = [AVAudioSession sharedInstance];
+
+    NSError *setCategoryError = nil;
+    if (![session setCategory:AVAudioSessionCategoryPlayback
+             withOptions:AVAudioSessionCategoryOptionMixWithOthers
+             error:&setCategoryError]) {
+        // handle error
+    }
+    
     RecommendModalViewController *parent = (RecommendModalViewController*)self.parentView;
     if(self.isPlayed){
         self.isPlayed = NO;

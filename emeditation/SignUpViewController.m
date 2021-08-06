@@ -18,6 +18,11 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    // change text color for place holder in text field
+    UIColor *color = [UIColor whiteColor];
+    emailTextfield.attributedPlaceholder = [[NSAttributedString alloc] initWithString:@"Email" attributes:@{NSForegroundColorAttributeName: color}];
+    passWordTextfield.attributedPlaceholder = [[NSAttributedString alloc] initWithString:@"Password" attributes:@{NSForegroundColorAttributeName: color}];
+    confirmPasswordTextfield.attributedPlaceholder = [[NSAttributedString alloc] initWithString:@"Confirm Password" attributes:@{NSForegroundColorAttributeName: color}];
     
     
     CGFloat heightScreen = self.view.frame.size.height;

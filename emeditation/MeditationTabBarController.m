@@ -16,6 +16,12 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    AppDelegate *delegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    if(delegate.isGuest){
+        [[self.viewControllers objectAtIndex:0] setTitle:@"SignIn"];
+    }else{
+        [[self.viewControllers objectAtIndex:0] setTitle:@"Profile"];
+    }
     [self setSelectedViewController:[self.viewControllers objectAtIndex:1]];
 }
 

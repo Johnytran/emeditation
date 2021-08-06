@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import "SignUpViewController.h"
+#import "AppDelegate.h"
 @import Firebase;
 @import GoogleSignIn;
 
@@ -20,6 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *heightContentView;
 - (IBAction)UpdatePhotoAction:(id)sender;
 @property (strong, nonatomic) FIRStorageReference *stRef;
+@property (strong, nonatomic) AppDelegate *appDelegate;
 
 @end
 

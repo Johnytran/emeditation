@@ -7,6 +7,7 @@
 //
 
 #import "HomeViewController.h"
+#import "FBLPromises.h"
 #define degreesToRadians( degrees ) ( ( degrees ) / 180.0 * M_PI )
 
 @interface HomeViewController ()
@@ -14,35 +15,126 @@
 @end
 
 @implementation HomeViewController
-@synthesize homeImageView, contentView, pulseImageView, refModalController, performanceView, trainingButton, sessionLevelLabel, myProfile, refToastController, refProgressController, downloadSongSize, musicData, appDelegate, startSessionButton, spinner, refRecommendController, isShowRecommend, guideView, coverGuideImageView, toolGuideView, player, isPlayed, beingPlay, trainingAudioURL;
+@synthesize homeImageView, contentView, performanceView, trainingButton, myProfile, refToastController, refProgressController, downloadSongSize, musicData, appDelegate, startSessionButton, spinner, refRecommendController, isShowRecommend, guideView, coverGuideImageView, toolGuideView, player, isPlayed, beingPlay, trainingAudioURL, dbProfile, recommendSong, refPromptController, refDataSongDownload, isFinishSave;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     
     
-    self.isShowRecommend = NO;
     
     // initialise
     self.dbRef = [[FIRDatabase database] reference];
     
-    // show the recommend music
-    if(self.isShowRecommend==NO){
-        // did user use to have an experimence?
-        FIRDatabaseQuery *userHistory = [self.dbRef child:[NSString stringWithFormat:@"history/%@",[FIRAuth auth].currentUser.uid]];
-        NSMutableArray * hasRecommend= [[NSMutableArray alloc] init];
-        [userHistory observeEventType:FIRDataEventTypeChildAdded withBlock:^(FIRDataSnapshot * _Nonnull userHistorySnapshot) {
-            if([hasRecommend count]<=0){
-                [hasRecommend addObject:@"yes"];
-                //show recommend music box
-                [self showRecommendMusic];
-                //NSLog(@"test");
-            }
-            
-        }];
-        hasRecommend = nil;
-        self.isShowRecommend = YES;
+    // initial guide
+    [self initGuide];
+    
+    /// loading the session profile
+    self.myProfile = [[NSMutableDictionary alloc] init];
+    self.appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    self.myProfile = self.appDelegate.myProfile;
+    
+    // UI for guest
+    if(self.appDelegate.isGuest){
+        [self.recommendSong setHidden:YES];
+        [self.performanceView setHidden:YES];
+    }else{
+        [self.recommendSong setHidden:NO];
+        
+        // loading percent performance per week
+        [self calculatePercentWeek];
+        [self.performanceView setHidden:NO];
     }
     
+    // UI setting
+    self.sessionTimeLabel.layer.cornerRadius = 10;
+    self.recommendSong.layer.zPosition = 1;
+    
+}
+
+-(void)showConfirm:(NSString*) heading{
+    
+    PromptViewController *checkPromptController = (PromptViewController*)self.refPromptController;
+    if(checkPromptController!=nil){
+        [checkPromptController removeAnimate];
+    }
+    
+    PromptViewController *tmpPromptController = [[PromptViewController alloc] initWithNibName:@"PromptViewController" bundle:nil];
+    
+    self.refPromptController = (PromptViewController*)tmpPromptController;
+    
+    CGFloat widthScreen = self.view.frame.size.width;
+    CGFloat heightScreen = self.view.frame.size.height;
+    tmpPromptController.parentController = self;
+    tmpPromptController.textContent = heading;
+    [tmpPromptController showView:CGRectMake(widthScreen/2-150,heightScreen/2-125, 300, 250)];
+}
+
+- (NSInteger)daysBetweenDate:(NSDate*)fromDateTime andDate:(NSDate*)toDateTime
+{
+    NSDate *fromDate;
+    NSDate *toDate;
+
+    NSCalendar *calendar = [NSCalendar currentCalendar];
+
+    [calendar rangeOfUnit:NSCalendarUnitDay startDate:&fromDate
+        interval:NULL forDate:fromDateTime];
+    [calendar rangeOfUnit:NSCalendarUnitDay startDate:&toDate
+        interval:NULL forDate:toDateTime];
+
+    NSDateComponents *difference = [calendar components:NSCalendarUnitDay
+        fromDate:fromDate toDate:toDate options:0];
+
+    return [difference day];
+}
+
+- (void) calculatePercentWeek{
+    // calculate percentage working this week
+    // create a list to store all the score for a user.
+    NSMutableArray *probabitiesRound = [[NSMutableArray alloc] init];
+    
+    FIRDatabaseQuery *userHistory = [self.dbRef child:[NSString stringWithFormat:@"history/%@",[FIRAuth auth].currentUser.uid]];
+    
+    [userHistory observeEventType:FIRDataEventTypeChildAdded withBlock:^(FIRDataSnapshot * _Nonnull userHistorySnapshot) {
+        float sum = 0;
+        float weekSum = 0;
+        float avgScore = 0;
+        for ( FIRDataSnapshot *child in userHistorySnapshot.children) {
+            NSString *probabilities = [child.value objectForKey:@"probabilities"];
+            
+            NSString *frDate = [child.value objectForKey:@"date"];
+            // Convert string to date object
+            NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
+            [dateFormat setDateFormat:@"dd-MM-yyyy HH:mm:ss"];
+            NSDate *userDate = [dateFormat dateFromString:frDate];
+            //NSLog(@"date = %@",userDate);
+            
+            NSDate* currentDate = [NSDate date];
+            //NSLog(@"current date = %@",currentDate);
+            
+            long numbDays = [self daysBetweenDate:userDate andDate:currentDate];
+            //NSLog(@"number days = %ld",numbDays);
+            
+            
+            float floatScore = [probabilities floatValue];
+            
+            if(numbDays<=7){
+                weekSum+= floatScore;
+            }
+            
+            sum += floatScore;
+            //NSLog(@"probabilities = %@",probabilities);
+
+        }
+        if(sum>0){
+            float average = (weekSum/sum)*100;
+            //NSLog(@"final score = %f",finalScore);
+            // show the progress
+            [self drawProgress: average];
+        }
+    }];
+}
+
+- (void)initGuide{
     // get training audio
     FIRDatabaseQuery *trainingQuery = [[self.dbRef child:@"training"] queryOrderedByKey];
     
@@ -51,6 +143,11 @@
         
     }];
     
+    // UI for button
+    self.trainingButton.layer.cornerRadius = 20;
+    [self.trainingButton.layer setShadowOffset:CGSizeMake(0.0f, 0.0f)];
+    [self.trainingButton.layer setShadowColor:[[UIColor blackColor] CGColor]];
+    [self.trainingButton.layer setShadowOpacity:0.8];
     
     // corner the cover guide
     CAShapeLayer * maskLayer = [CAShapeLayer layer];
@@ -64,77 +161,12 @@
     
     self.toolGuideView.layer.mask = maskToolGuideLayer;
     
-    
-    /// loading the session profile
-    self.myProfile = [[NSMutableDictionary alloc] init];
-    self.appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-    self.myProfile = self.appDelegate.myProfile;
-    
-    self.sessionTimeLabel.layer.cornerRadius = 10;
-    self.sessionLevelLabel.layer.cornerRadius = 10;
-    
-    self.trainingButton.layer.cornerRadius = 20;
-    [self.trainingButton.layer setShadowOffset:CGSizeMake(0.0f, 0.0f)];
-    [self.trainingButton.layer setShadowColor:[[UIColor blackColor] CGColor]];
-    [self.trainingButton.layer setShadowOpacity:0.8];
-    
-    
     self.guideView.layer.cornerRadius = 20;
     [self.guideView.layer setShadowOffset:CGSizeMake(0.0f, 0.0f)];
     [self.guideView.layer setShadowColor:[[UIColor blackColor] CGColor]];
     [self.guideView.layer setShadowOpacity:0.8];
     [self.guideView.layer setBorderWidth:2.0];
     [self.guideView.layer setBorderColor:[[UIColor colorWithRed:0.62 green:0.14 blue:0.67 alpha:1.0] CGColor]];
-    
-    // calculate percentage working this week
-    // create a list to store all the score for a user.
-    NSMutableArray *probabitiesRound = [[NSMutableArray alloc] init];
-    
-    FIRDatabaseQuery *userHistory = [self.dbRef child:[NSString stringWithFormat:@"history/%@",[FIRAuth auth].currentUser.uid]];
-    
-    [userHistory observeEventType:FIRDataEventTypeChildAdded withBlock:^(FIRDataSnapshot * _Nonnull userHistorySnapshot) {
-        float sum = 0;
-        float avgScore = 0;
-        for ( FIRDataSnapshot *child in userHistorySnapshot.children) {
-            NSString *probabilities = [child.value objectForKey:@"probabilities"];
-            //NSLog(@"date = %@",[child.value objectForKey:@"date"]);
-            float floatScore = [probabilities floatValue];
-            sum += floatScore;
-            //NSLog(@"probabilities = %@",probabilities);
-
-        }
-        //        NSLog(@"sum = %f",sum);
-        //        NSLog(@"count = %lu",(unsigned long)userHistorySnapshot.childrenCount);
-        avgScore = sum/userHistorySnapshot.childrenCount;
-        //NSLog(@"average for song = %f",avgScore);
-
-        // store each avg song to a list
-        [probabitiesRound addObject:[NSNumber numberWithFloat:avgScore]];
-
-        // calculate final avg in the list
-        NSNumber *average = [probabitiesRound valueForKeyPath:@"@avg.self"];
-
-        //NSLog(@"avgScore = %f",[average floatValue]);
-        float finalScore = [average floatValue];
-        //NSLog(@"final score = %f",finalScore);
-        // show the progress
-        [self drawProgress: finalScore*100];
-        
-    }];
-    
-    
-    
-    // loading background animation image
-    FLAnimatedImage *homeImage = [[FLAnimatedImage alloc] initWithAnimatedGIFData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"rain" ofType:@"gif"]]];
-    self.homeImageView.animatedImage = homeImage;
-    
-    // loading pulse for bluetooth
-    FLAnimatedImage *pulseImage = [[FLAnimatedImage alloc] initWithAnimatedGIFData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"pulse" ofType:@"gif"]]];
-    self.pulseImageView.animatedImage = pulseImage;
-    
-    
-    
-
 }
 
 - (float)percentToDegre: (float)percent withStart: (int)start{
@@ -212,28 +244,37 @@
 
 
 - (void)viewDidAppear:(BOOL)animated{
-    
-    if(self.appDelegate.delegateWeakTime){
-        // reset the to normal
-        self.appDelegate.delegateWeakTime = 0;
+    self.isFinishSave = NO;
+    if(self.refRecommendController==nil){
+        if(!self.appDelegate.isGuest){
+            // show the recommend music
+            [self showRecommendMusic];
+        }
         
-        // show warning message
-        [self showMessage:@"Your experimence time was short to analyse so please relax and take more time doing meditation."];
     }
+    [self.spinner removeFromSuperview];
+//    if(self.appDelegate.delegateWeakTime){
+//        // reset the to normal
+//        self.appDelegate.delegateWeakTime = 0;
+//
+//        // show warning message
+//        [self showMessage:@"Your experimence time was short to analyse so please relax and take more time doing meditation."];
+//    }
     
     
-    [refModalController removeAnimate];
     
     if(self.guideView.alpha==1){
         [self closeGuide];
     }
     
     [super viewDidAppear:animated];
+    
+    // hidden tab bar for next scene
     self.tabBarController.tabBar.hidden=NO;
     
     
     
-    // get selected time
+    // set selected time for label
     NSString *selectedTime =  [self.myProfile objectForKey:@"session_time"];
     if(selectedTime!=nil){
         int minutes = [selectedTime intValue];
@@ -246,12 +287,6 @@
         }
         
     }
-    // get selected level
-    NSString *selectedLevel =  [self.myProfile objectForKey:@"session_level"];
-    if(selectedLevel!=nil){
-        [self.sessionLevelLabel setText:selectedLevel];
-    }
-    
     
     //NSLog(@"selected time: %@", selectedTime);
     
@@ -270,19 +305,6 @@
     [super viewWillAppear:animated];
 }
 
-
-- (IBAction)turnBluetooth:(id)sender {
-    if(refModalController!=nil){
-        [refModalController removeAnimate];
-    }
-        
-    refModalController = [[ModalBoxViewController alloc] initWithNibName:@"ModalBoxViewController" bundle:nil];
-    CGFloat widthScreen = self.view.frame.size.width;
-    CGFloat heightScreen = self.view.frame.size.height;
-    
-    [refModalController showView:self.contentView withFrame:CGRectMake(self.pulseImageView.frame.origin.x+80, self.pulseImageView.frame.origin.y+80, widthScreen, heightScreen)];
-
-}
 - (IBAction)training:(id)sender {
     [self showAnimateGuide];
 }
@@ -292,9 +314,6 @@
     [self performSegueWithIdentifier:@"session_length_seque" sender:self];
 }
 
-- (IBAction)SetLevel:(id)sender {
-    [self performSegueWithIdentifier:@"session_level_seque" sender:self];
-}
 
 - (void)prepareMusic{
     if(self.refProgressController!=nil){
@@ -317,11 +336,7 @@
             // file doesn't exist
             NSLog(@"file doesn't exist");
             
-            self.refProgressController = [[ProgressModalViewController alloc] initWithNibName:@"ProgressModalViewController" bundle:nil];
-            CGFloat widthScreen = self.view.frame.size.width;
-            CGFloat heightScreen = self.view.frame.size.height;
             
-            [self.refProgressController showView:self.view withFrame:CGRectMake(0, heightScreen-260, widthScreen, 260)];
             
             NSURLSessionConfiguration *defaultConfigObject = [NSURLSessionConfiguration defaultSessionConfiguration];
             
@@ -337,9 +352,19 @@
             [self performSegueWithIdentifier:@"startSessesion" sender:self];
         }
     }else{
+        // return to music gallery to get a song
         [self.spinner removeFromSuperview];
-        [self.navigationController setNavigationBarHidden:YES animated:YES];
-        [self performSegueWithIdentifier:@"startSessesion" sender:self];
+        
+        [self showMessage:@"Please choose a song before start session."];
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            
+            self.tabBarController.selectedIndex = 2;
+            [self.navigationController popToRootViewControllerAnimated:YES];
+            
+            
+        });
+        
+        
     }
     
     
@@ -348,6 +373,11 @@
     completionHandler(NSURLSessionResponseAllow);
     self.downloadSongSize = [response expectedContentLength];
     self.musicData = [[NSMutableData alloc] init];
+    float fileSize = (float)self.downloadSongSize/1024.0f/1024.0f;
+    NSString *msg = [NSString stringWithFormat:@"The file size is %f Mb. It has to be downloaded before using. Do you want to continue?", fileSize];
+    [self showConfirm:msg];
+    self.refDataSongDownload = dataTask;
+    [dataTask suspend];
 }
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data{
     [self.musicData appendData:data];
@@ -356,7 +386,7 @@
     int roundPercent = ceil(percent);
     //NSLog(@"percent: %d", roundPercent);
     [[self.refProgressController dowloadingLabel] setText:[NSString stringWithFormat:@"Song downloading...%d%%", roundPercent]];
-    if(roundPercent==100){
+    if(roundPercent==100 && self.isFinishSave==NO){
         [self.refProgressController removeAnimate];
         NSError *error = nil;
         
@@ -366,12 +396,42 @@
             NSLog(@"Error Writing Song : %@",error);
         }else{
             NSLog(@"Song %@ Saved SuccessFully",_theFileName);
+            self.isFinishSave = YES;
             [self.spinner removeFromSuperview];
             [self.navigationController setNavigationBarHidden:YES animated:YES];
             [self performSegueWithIdentifier:@"startSessesion" sender:self];
         }
     }
 }
+
+- (void)PerformDownload{
+    [self.refDataSongDownload resume];
+    
+    PromptViewController *checkPromptController = (PromptViewController*)self.refPromptController;
+    if(checkPromptController!=nil){
+        [checkPromptController removeAnimate];
+    }
+    
+    if(self.refProgressController!=nil){
+        [self.refProgressController removeAnimate];
+    }
+    
+    self.refProgressController = [[ProgressModalViewController alloc] initWithNibName:@"ProgressModalViewController" bundle:nil];
+    CGFloat widthScreen = self.view.frame.size.width;
+    CGFloat heightScreen = self.view.frame.size.height;
+    
+    [self.refProgressController showView:self.view withFrame:CGRectMake(0, heightScreen-260, widthScreen, 260)];
+    
+    
+}
+-(void)CancelDownload{
+    [self.refDataSongDownload cancel];
+    PromptViewController *checkPromptController = (PromptViewController*)self.refPromptController;
+    if(checkPromptController!=nil){
+        [checkPromptController removeAnimate];
+    }
+}
+
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id <UIViewControllerTransitionCoordinator>)coordinator
 {
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
@@ -388,27 +448,16 @@
         
         // Code here will execute after the rotation has finished.
         // Equivalent to placing it in the deprecated method -[didRotateFromInterfaceOrientation:]
-        [self.refRecommendController removeAnimate];
-        if(self.isShowRecommend==NO){
-            //show recommend music box
-            
-            // did user use to have an experimence?
-            FIRDatabaseQuery *userHistory = [self.dbRef child:[NSString stringWithFormat:@"history/%@",[FIRAuth auth].currentUser.uid]];
-            NSMutableArray * hasRecommend= [[NSMutableArray alloc] init];
-            //NSLog(@"has recommend %lu", (unsigned long)[hasRecommend count]);
-            [userHistory observeEventType:FIRDataEventTypeChildAdded withBlock:^(FIRDataSnapshot * _Nonnull userHistorySnapshot) {
-                if([hasRecommend count]<=0){
-                    [hasRecommend addObject:@"yes"];
-                    //show recommend music box
-                    [self showRecommendMusic];
-                    //NSLog(@"test");
-                }
-                
-            }];
-            hasRecommend = nil;
-            self.isShowRecommend = YES;
+        if(self.refRecommendController==nil && !self.appDelegate.isGuest){
+            [self showRecommendMusic];
         }
         
+        PromptViewController *checkPromptController = (PromptViewController*)self.refPromptController;
+        if(checkPromptController!=nil){
+            [checkPromptController removeAnimate];
+        }
+        
+        [self.spinner removeFromSuperview];
         
     }];
 }
@@ -420,6 +469,7 @@
     [self.refToastController showView:self.view withFrame:CGRectMake(widthScreen/2-100,heightScreen/2-100, 200, 200)];
 }
 - (void)showRecommendMusic{
+    
     self.refRecommendController = [[RecommendModalViewController alloc] initWithNibName:@"RecommendModalViewController" bundle:nil];
     CGFloat widthScreen = self.view.frame.size.width;
     CGFloat heightScreen = self.view.frame.size.height;
@@ -478,54 +528,42 @@
     [self.startSessionButton addSubview:self.spinner];
     [self.spinner bringSubviewToFront:self.spinner];
     
-    // get user profile from firebase and check each item value in the session and update if it is nil
-    FIRDatabaseQuery *profileQuery = [[[self.dbRef child:@"profile"] queryOrderedByChild:@"uid"] queryEqualToValue:[FIRAuth auth].currentUser.uid];
-
-    [profileQuery observeEventType:FIRDataEventTypeChildAdded withBlock:^(FIRDataSnapshot * _Nonnull snapshot) {
-        NSString *occupationFRID = [snapshot.value objectForKey:@"occupation"];
-        NSString *sportFRID = [snapshot.value objectForKey:@"sport"];
-        NSString *sportTimeFRID = [snapshot.value objectForKey:@"sport_time"];
-        NSString *travelFRID = [snapshot.value objectForKey:@"travel"];
-        NSString *maritalStatusFRID = [snapshot.value objectForKey:@"marital_status"];
-
-        NSString *occupationID =  [self.myProfile objectForKey:@"occupation"];
-        if(occupationID==nil&&occupationFRID!=nil){
-            occupationID = occupationFRID;
-            [self.myProfile setObject:occupationFRID forKey:@"occupation"];
-        }
-        NSString *sportTimeID =  [self.myProfile objectForKey:@"sport_time"];
-        if(sportTimeID==nil&&sportTimeFRID!=nil)
-            [self.myProfile setObject:sportTimeFRID forKey:@"sport_time"];
-        
-        NSString *sportID =  [self.myProfile objectForKey:@"sport"];
-        if(sportID==nil&&sportFRID!=nil)
-            [self.myProfile setObject:sportFRID forKey:@"sport"];
-
-        NSString *maritalStatusID =  [self.myProfile objectForKey:@"marital_status"];
-        if(maritalStatusID==nil&&maritalStatusFRID!=nil)
-            [self.myProfile setObject:maritalStatusFRID forKey:@"marital_status"];
-
-        NSString *travelID =  [self.myProfile objectForKey:@"travel"];
-        if(travelID==nil&&travelFRID!=nil)
-            [self.myProfile setObject:travelFRID forKey:@"travel"];
-
-        if(occupationID!=nil){
-
+    self.dbProfile = [[Profile alloc] init];
+    [dbProfile getProfileDB:_dbRef completion:^(Profile *data){
+        //NSLog(@"test %@", [data marital_status]);
+        if([data uid]!=nil){
+            // update profile to global variable
+            [self.myProfile setObject:[data occupation] forKey:@"occupation"];
+            [self.myProfile setObject:[data sport_time] forKey:@"sport_time"];
+            [self.myProfile setObject:[data sport] forKey:@"sport"];
+            [self.myProfile setObject:[data marital_status] forKey:@"marital_status"];
+            [self.myProfile setObject:[data travel] forKey:@"travel"];
+            
             //download song before start
             [self prepareMusic];
-
         }else{
             [self.spinner removeFromSuperview];
-            [self showMessage:@"Please update your profile that could give you a better session."];
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                [self.navigationController setNavigationBarHidden:YES animated:YES];
-                [self performSegueWithIdentifier:@"startSessesion" sender:self];
-            });
-
+            //in case it has no profile
+            // check for guest
+            if(self.appDelegate.isGuest){
+                [self prepareMusic];
+            }else{
+                [self showMessage:@"Please update your profile that could give you a better session."];
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                    
+                    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+                    ViewController *personalViewController = [storyboard instantiateViewControllerWithIdentifier:@"profile"];
+                    [self presentViewController:personalViewController animated:true completion:nil];
+                    
+                });
+            }
+            
         }
-
+        //NSLog(@"test %@", [data marital_status]);
     }];
-    
+        
+//    NSLog(@"profile %@", self.dbProfile);
+//    NSLog(@"profile %@", self.myProfile);
 }
 
 - (void)showAnimateGuide
@@ -570,6 +608,14 @@
 
 - (void) PlayMusic: (NSString*) urlString{
     
+    AVAudioSession *session = [AVAudioSession sharedInstance];
+
+    NSError *setCategoryError = nil;
+    if (![session setCategory:AVAudioSessionCategoryPlayback
+             withOptions:AVAudioSessionCategoryOptionMixWithOthers
+             error:&setCategoryError]) {
+        // handle error
+    }
     
     _documentsDirectoryPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
     _theFileName = [[urlString lastPathComponent] stringByDeletingPathExtension];
@@ -620,5 +666,12 @@
 
 - (IBAction)SkipGuide:(id)sender {
     [self closeGuide];
+}
+
+- (IBAction)OpenRecommend:(id)sender {
+    if(self.refRecommendController!=nil){
+        [self.refRecommendController removeAnimate];
+    }
+    [self showRecommendMusic];
 }
 @end

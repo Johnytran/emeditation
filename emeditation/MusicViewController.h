@@ -13,7 +13,6 @@
 #import "Album.h"
 #import "Song.h"
 #import "AppDelegate.h"
-#import "FLAnimatedImage.h"
 #import <AudioToolbox/AudioToolbox.h>
 #import <AVFoundation/AVFoundation.h>
 #import "ProgressModalViewController.h"
@@ -22,6 +21,8 @@
 #import <netinet/in.h>
 #import <SystemConfiguration/SystemConfiguration.h>
 #import "Reachability.h"
+#import "PromptViewController.h"
+
 @import CoreData;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -33,13 +34,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property NSIndexPath *indexPlaying;
 @property (weak, nonatomic) IBOutlet UILabel *songTitleLabel;
 @property (weak, nonatomic) IBOutlet UILabel *songArtistLabel;
-@property (weak, nonatomic) FLAnimatedImageView *loadingImageSubView;
+@property (weak, nonatomic) UIImageView *loadingImageSubView;
 @property int numberAlbumDisplay;
 @property (strong, atomic) NSMutableArray *songByAlbumIDArray;
 @property (weak, nonatomic) IBOutlet UITableView *listSongTableView;
 @property (strong, nonatomic) FIRDatabaseReference *ref;
 @property (strong, nonatomic) UIButton *selectedPlayButton;
-@property (weak, nonatomic) IBOutlet FLAnimatedImageView *loadingView;
+@property (weak, nonatomic) IBOutlet UIImageView *loadingView;
 
 @property (weak, nonatomic) IBOutlet UIButton *playMainButton;
 @property (weak, nonatomic) IBOutlet UIButton *nexMusicButton;
@@ -57,6 +58,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) float downloadSongSize;
 
 @property (strong, nonatomic) ProgressModalViewController *refModalController;
+@property (strong, nonatomic) UIViewController *refPromptController;
+@property (strong, nonatomic) NSURLSessionDataTask *refDataSongDownload;
+
 
 @property (strong, nonatomic) NSManagedObjectContext *managedContext;
 
@@ -66,7 +70,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) NSString *writablePath;
 @property (nonatomic) NSString *theFileName;
 
+@property (strong, nonatomic) NSMutableArray *expandedCells;
+
 - (void)stopAllCell: (NSIndexPath*)exceptIndex;
+- (void)PerformDownload;
+- (void)CancelDownload;
 
 @end
 

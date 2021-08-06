@@ -16,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) NSString *duration;
 @property (strong, nonatomic) NSString *artistID;
 @property (strong, nonatomic) NSString *songLink;
+@property (strong, nonatomic) NSString *introtext;
 @property (strong, nonatomic) NSNumber *songScore;
 
 @end

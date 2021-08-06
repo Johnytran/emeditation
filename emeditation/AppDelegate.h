@@ -12,13 +12,16 @@
 #import "MeditationTabBarController.h"
 #import "ViewController.h"
 
+
 @import Firebase;
 @import GoogleSignIn;
+
 
 @interface AppDelegate : UIResponder <UIApplicationDelegate, GIDSignInDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
 @property int delegateWeakTime;
+@property int isGuest;
 @property (strong, nonatomic) NSMutableDictionary *myProfile;
 @property (strong, nonatomic) NSString *urlCSVFile;
 @property (readonly, strong) NSPersistentContainer *persistentContainer;

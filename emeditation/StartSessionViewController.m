@@ -13,9 +13,12 @@
 @end
 
 @implementation StartSessionViewController
-@synthesize player, playButton, isPlayed, timeOfSession, remainingTimeLabel, musicTitleLabel, stopButton, secondsLeft, bgImageView, myProfile, dbRef, appDelegate, refModalController, secondsDone, refCSVModalController, csvEmotionURL;
+@synthesize player, playButton, isPlayed, timeOfSession, remainingTimeLabel, musicTitleLabel, stopButton, secondsLeft, bgImageView, myProfile, dbRef, appDelegate, refModalController, secondsDone, isLike;
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    
+    
     // a flag for turn on music player
     isPlayed = NO;
     secondsDone = 0;
@@ -41,18 +44,8 @@
     }
     
     
-    
-    // creating background
-    NSString * homeBundle = [[NSBundle mainBundle]pathForResource:@"waterfall" ofType:@"gif"];
-    FLAnimatedImage *imageHome = [FLAnimatedImage animatedImageWithGIFData:[NSData dataWithContentsOfFile:homeBundle]];
-    bgImageView.animatedImage = imageHome;
-    
-    
-    
-    
 }
 - (void) PlayMusicURL: (NSString*) urlString{
-    
     
     
     _documentsDirectoryPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
@@ -72,9 +65,41 @@
         NSData *data = [NSData dataWithContentsOfURL:url];
         player = [[AVAudioPlayer alloc] initWithData:data error:nil];
     }
+    AVAudioSession *session = [AVAudioSession sharedInstance];
 
+    NSError *setCategoryError = nil;
+    if (![session setCategory:AVAudioSessionCategoryPlayback
+             withOptions:AVAudioSessionCategoryOptionMixWithOthers
+             error:&setCategoryError]) {
+        // handle error
+    }
+    
     [player play];
     isPlayed = YES;
+}
+- (void)showRating{
+    
+    ModalBoxViewController *modalLikeController = [[ModalBoxViewController alloc] initWithNibName:@"ModalBoxViewController" bundle:nil];
+    
+    CGFloat widthScreen = self.view.frame.size.width;
+    CGFloat heightScreen = self.view.frame.size.height;
+    [modalLikeController setParentController:self];
+    [modalLikeController showView: CGRectMake(0,0, widthScreen, heightScreen)];
+    [self addChildViewController:modalLikeController];
+    [modalLikeController didMoveToParentViewController:self];
+    
+}
+- (void)showCompleteMessage{
+    
+    ModalCompleteViewController *modalCompleteController = [[ModalCompleteViewController alloc] initWithNibName:@"ModalCompleteViewController" bundle:nil];
+    
+    CGFloat widthScreen = self.view.frame.size.width;
+    CGFloat heightScreen = self.view.frame.size.height;
+    [modalCompleteController setParentController:self];
+    [modalCompleteController showView: CGRectMake(0,0, widthScreen, heightScreen)];
+    [self addChildViewController:modalCompleteController];
+    [modalCompleteController didMoveToParentViewController:self];
+    
 }
 - (void)viewWillAppear:(BOOL)animated
 {
@@ -104,16 +129,13 @@
     if (secondsLeft==0) {
         [timeOfSession invalidate];
         [self.player stop];
-        //[self processRecommend];
-        if(refCSVModalController!=nil){
-            [refCSVModalController removeAnimate];
+        if(!self.appDelegate.isGuest){
+            // rating song
+            [self showRating];
+        }else{
+            [self.navigationController popToRootViewControllerAnimated:YES];
         }
-        
-        refCSVModalController = [[GetURLViewController alloc] initWithNibName:@"GetURLViewController" bundle:nil];
-        CGFloat widthScreen = self.view.frame.size.width;
-        CGFloat heightScreen = self.view.frame.size.height;
-        
-        [refCSVModalController showView:self.view withFrame:CGRectMake(widthScreen/2-125, heightScreen/2-100, 250, 200)];
+        //[self processRecommend];
     }
     
 }
@@ -157,14 +179,7 @@
     [self.refModalController showView:self.view withFrame:CGRectMake(widthScreen/2-100,heightScreen/2-100, 200, 200)];
 }
 
-- (void)processRecommend:(NSArray*) emotionData{
-    
-    if([emotionData count]>2){
-    
-        NSString *firstRow = [emotionData firstObject];
-        NSString *lastRow = [emotionData objectAtIndex:[emotionData count]-2];
-        
-    
+- (void)processRecommend{
     
         NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
         NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration delegate:nil delegateQueue:nil];
@@ -182,11 +197,7 @@
         [request setHTTPMethod:@"POST"];
         
         
-        NSArray *columnNameArray = [[NSArray alloc] initWithObjects:@"engagement",
-                                    @"relax",
-                                    @"stress",
-                                    @"excitement",
-                                    @"interest",
+        NSArray *columnNameArray = [[NSArray alloc] initWithObjects:
                                     @"occupation",
                                     @"sport_time",
                                     @"sport",
@@ -197,106 +208,31 @@
         
         
         NSString *occupation = [self.myProfile objectForKey:@"occupation"];
-        if(occupation==nil){
-            occupation = @"1"; // set default
-            // update profile to firebase
-            NSDictionary *post = @{@"uid": [FIRAuth auth].currentUser.uid,
-                                   @"occupation": @"01",
-                                   @"sport_time": @"01",
-                                   @"sport": @"01",
-                                   @"marital_status": @"01",
-                                   @"travel": @"01",
-                                   @"song": @"song01"
-                                   };
-            
-            [[[self.dbRef child:@"profile"] child:[FIRAuth auth].currentUser.uid] setValue:post withCompletionBlock:^(NSError *error, FIRDatabaseReference *ref) {
-                if (error) {
-                    NSLog(@"Save default profile background could not be saved: %@", error);
-                    //[self showMessage:@"Profile background could not be saved"];
-                } else {
-                    NSLog(@"Default profile background saved successfully.");
-                    
-                    //[self showMessage:@"Profile background saved successfully."];
-                    
-                }
-            }];
-        }
+        
         NSString *sport_time = [NSString stringWithFormat:@"%@",[self.myProfile objectForKey:@"sport_time"]];
-        if(sport_time==nil)
-            sport_time = @"1"; // set default
+    
         NSString *sport = [NSString stringWithFormat:@"%@",[self.myProfile objectForKey:@"sport"]];
-        if(sport==nil)
-            sport = @"1"; // set default
+        
         NSString *marital_status = [NSString stringWithFormat:@"%@",[self.myProfile objectForKey:@"marital_status"]];
-        if(marital_status==nil)
-            marital_status = @"1"; // set default
+        
         NSString *travel = [NSString stringWithFormat:@"%@",[self.myProfile objectForKey:@"travel"]];
-        if(travel==nil)
-            travel = @"1"; // set default
+        
         Song *song = [self.myProfile objectForKey:@"song"];
-        NSString *songID = @"";
-        if(song==nil){
-            songID = @"song01"; // set default
-        }else{
-            songID = [song songID];
-        }
         
+        //NSLog(@"song:%@", song);
+    
+        NSString *inputResult = [@(isLike) stringValue];
         
-        
-         // first session
-        NSString *stress;
-        if(firstRow!=nil){
-            NSArray* columns1 = [firstRow componentsSeparatedByString:@","];
-            if([columns1 count] >0){
-                stress = columns1[2];
-                //NSLog(@"stress: %@", stress);
-            }
-        }
-        NSString *engagement_end;
-        NSString *relax_end;
-        NSString *stress_end;
-        NSString *excitement_end;
-        NSString *interest_end;
-        // last session
-        if(lastRow!=nil){
-            NSArray* columns2 = [lastRow componentsSeparatedByString:@","];
-            if([columns2 count] >0){
-                engagement_end = columns2[0];
-                relax_end = columns2[1];
-                stress_end = columns2[2];
-                excitement_end = columns2[3];
-                interest_end = columns2[4];
-                //NSLog(@"engagement: %@", engagement);
-            }
-        }
-        
-        float firstStressFloat = [stress floatValue];
-        
-//        float excitementFloat = [excitement_end floatValue];
-//        float engagementFloat = [engagement_end floatValue];
-//        float relaxFloat = [relax_end floatValue];
-        float stressFloat = [stress_end floatValue];
-        //float interestFloat = [interest_end floatValue];
-        
-        NSString *inputResult = @"0";
-        if(stressFloat<firstStressFloat)
-            inputResult = @"1";
-        
-        
-        NSArray *columnValue1Array = [[NSArray alloc] initWithObjects:engagement_end,
-                                      relax_end,
-                                      stress_end,
-                                      excitement_end,
-                                      interest_end,
+        NSArray *columnValue1Array = [[NSArray alloc] initWithObjects:
                                       occupation,
                                       sport_time,
                                       sport,
                                       marital_status,
                                       travel,
-                                      songID,
+                                      [song songID],
                                       inputResult, nil];
         
-        
+        //NSLog(@"columnValue1Array:%@", columnValue1Array);
         NSArray *columnValueArray = [[NSArray alloc] initWithObjects:columnValue1Array, nil];
         
         NSMutableDictionary *contentInput1Dictionary = [[NSMutableDictionary alloc] init];
@@ -307,6 +243,7 @@
         NSMutableDictionary *input1Dictionary = [[NSMutableDictionary alloc] init];
         [input1Dictionary setObject:contentInput1Dictionary forKey:@"input1"];
         
+        //NSLog(@"contentInput1Dictionary:%@", contentInput1Dictionary);
         
         NSMutableDictionary *mapDataDictionary = [[NSMutableDictionary alloc] init];
         [mapDataDictionary setObject:input1Dictionary forKey:@"Inputs"];
@@ -348,11 +285,6 @@
                                     //NSArray *firstResult = [[NSArray alloc] initWithArray:[values firstObject]];
                                     NSArray *firstResult = [values firstObject];
                                     if([firstResult count]>0){
-                                        NSString *engagement = [firstResult firstObject];
-                                        NSString *relax;
-                                        NSString *stress;
-                                        NSString *excitement;
-                                        NSString *interest;
                                         NSString *occupation;
                                         NSString *sport_time;
                                         NSString *sport;
@@ -360,39 +292,28 @@
                                         NSString *marital_status;
                                         NSString *song;
                                         NSString *result;
+                                        
+                                        
+                                        if([firstResult count]>=0){
+                                            occupation = [firstResult objectAtIndex:0];
+                                        }
                                         if([firstResult count]>=1){
-                                            relax = [firstResult objectAtIndex:1];
+                                            sport_time = [firstResult objectAtIndex:1];
                                         }
                                         if([firstResult count]>=2){
-                                            stress = [firstResult objectAtIndex:2];
+                                            sport = [firstResult objectAtIndex:2];
                                         }
                                         if([firstResult count]>=3){
-                                            excitement = [firstResult objectAtIndex:3];
+                                            marital_status = [firstResult objectAtIndex:3];
                                         }
                                         if([firstResult count]>=4){
-                                            interest = [firstResult objectAtIndex:4];
+                                            travel = [firstResult objectAtIndex:4];
                                         }
-                                        
                                         if([firstResult count]>=5){
-                                            occupation = [firstResult objectAtIndex:5];
+                                            song = [firstResult objectAtIndex:5];
                                         }
                                         if([firstResult count]>=6){
-                                            sport_time = [firstResult objectAtIndex:6];
-                                        }
-                                        if([firstResult count]>=7){
-                                            sport = [firstResult objectAtIndex:7];
-                                        }
-                                        if([firstResult count]>=8){
-                                            marital_status = [firstResult objectAtIndex:8];
-                                        }
-                                        if([firstResult count]>=9){
-                                            travel = [firstResult objectAtIndex:9];
-                                        }
-                                        if([firstResult count]>=10){
-                                            song = [firstResult objectAtIndex:10];
-                                        }
-                                        if([firstResult count]>=11){
-                                            result = [firstResult objectAtIndex:11];
+                                            result = [firstResult objectAtIndex:6];
                                         }
                                         
                                         NSString *probabilities = [firstResult lastObject];
@@ -403,10 +324,7 @@
                                         if(selectedTime==nil)
                                             selectedTime = @"5";
                                         
-                                        // get selected time
-                                        NSString *selectedLevel =  [self.myProfile objectForKey:@"session_level"];
-                                        if(selectedLevel==nil)
-                                            selectedLevel = @"1";
+                                    
                                         
                                         NSDateFormatter *dateFormatter=[[NSDateFormatter alloc] init];
                                         [dateFormatter setDateFormat:@"dd-MM-yyyy HH:mm:ss"];
@@ -417,29 +335,23 @@
                                                                @"sport": sport,
                                                                @"marital_status": marital_status,
                                                                @"travel": travel,
-                                                               @"engagement": engagement,
-                                                               @"relax": relax,
-                                                               @"stress": stress,
-                                                               @"excitement": excitement,
-                                                               @"interest": interest,
-                                                               
                                                                @"probabilities": probabilities,
                                                                @"session_time": selectedTime,
-                                                               @"session_level": selectedLevel,
                                                                @"song": song,
                                                                @"result": result,
                                                                @"date": [dateFormatter stringFromDate:[NSDate date]]
                                                                };
                                         
                                         // update gobal variable
-                                        NSMutableDictionary *newProfile = [post mutableCopy];
-                                        self.appDelegate.myProfile = newProfile;
+//                                        NSMutableDictionary *newProfile = [post mutableCopy];
+//                                        self.appDelegate.myProfile = newProfile;
                                         
                                         // save to history in firebase
                                         [[self.dbRef child:[NSString stringWithFormat:@"history/%@/%@/%@",[FIRAuth auth].currentUser.uid, song, [self.dbRef childByAutoId].key ]]  setValue:post withCompletionBlock:^(NSError *error, FIRDatabaseReference *ref){
                                             if(error==nil){
                                                 NSLog(@"Session is save to history");
-                                                [self performSegueWithIdentifier:@"resultSeque" sender:nil];
+                                                [self showCompleteMessage];
+                                                //[self performSegueWithIdentifier:@"resultSeque" sender:nil];
                                             }else{
                                                 NSLog(@"Have error in saving to history: %@", error);
                                             }
@@ -472,62 +384,22 @@
         }];
         [postDataTask resume];
         
-    }else{
-        [self showMessage:@"Data from your EEG device is not ready to process"];
-        [self performSegueWithIdentifier:@"resultSeque" sender:nil];
-    }
+    
 }
 
 - (IBAction)stopSession:(id)sender {
     [self.player stop];
     [timeOfSession invalidate];
-    int doneMinutes = (self.secondsDone % 3600) / 60;
-    
-    if(refCSVModalController!=nil){
-        [refCSVModalController removeAnimate];
+    //int doneMinutes = (self.secondsDone % 3600) / 60;
+    if(!self.appDelegate.isGuest){
+        // rating song
+        [self showRating];
+    }else{
+        [self.navigationController popToRootViewControllerAnimated:YES];
     }
     
-    refCSVModalController = [[GetURLViewController alloc] initWithNibName:@"GetURLViewController" bundle:nil];
-    CGFloat widthScreen = self.view.frame.size.width;
-    CGFloat heightScreen = self.view.frame.size.height;
-    
-    [refCSVModalController showView:self.view withFrame:CGRectMake(widthScreen/2-125, heightScreen/2-100, 250, 200)];
-    
-    
-    
-
-    
-    
-    
-    
-//    if(doneMinutes>=5){
-//        [self processRecommend];
-//    }else{// too short time for getting experiment
-//
-//        self.appDelegate.delegateWeakTime = 1;
-//        [self.navigationController popToRootViewControllerAnimated:YES];
-//    }
     
 
 }
-- (IBAction)ProcessAction:(id)sender {
-    AppDelegate *delegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-    NSString *csvURL = [[NSString alloc] initWithString:delegate.urlCSVFile];
-    if(![csvURL isEqual:@""]){
-        NSMutableString *stringToTrim = [csvURL mutableCopy];
-        
-        //pass it by reference to CFStringTrimSpace
-        CFStringTrimWhitespace((__bridge CFMutableStringRef) stringToTrim);
-        
-        NSURL *urlCSV = [NSURL URLWithString:stringToTrim];
-        
-        NSError* error;
-        NSString *reply = [NSString stringWithContentsOfURL:urlCSV encoding:NSUTF8StringEncoding error:&error];
-        NSArray* rows = [reply componentsSeparatedByString:@"\n"];
-        
-        [self processRecommend: rows];
-        
 
-    }
-}
 @end

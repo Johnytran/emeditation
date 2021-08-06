@@ -20,6 +20,7 @@
     [FIRApp configure];
     AppDelegate *delegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
     delegate.delegateWeakTime = 0;
+    delegate.isGuest = 0;
     delegate.urlCSVFile = [[NSString alloc] init];
     delegate.myProfile = [[NSMutableDictionary alloc] init];
     
@@ -31,9 +32,7 @@
 - (BOOL)application:(nonnull UIApplication *)application
             openURL:(nonnull NSURL *)url
             options:(nonnull NSDictionary<NSString *, id> *)options {
-    return [[GIDSignIn sharedInstance] handleURL:url
-                               sourceApplication:options[UIApplicationOpenURLOptionsSourceApplicationKey]
-                                      annotation:options[UIApplicationOpenURLOptionsAnnotationKey]];
+    return [[GIDSignIn sharedInstance] handleURL:url];
 }
 - (void)signIn:(GIDSignIn *)signIn
 didSignInForUser:(GIDGoogleUser *)user

@@ -7,14 +7,14 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "FLAnimatedImage.h"
+#import "ModalBoxViewController.h"
+#import "ModalCompleteViewController.h"
 #import <AudioToolbox/AudioToolbox.h>
 #import <AVFoundation/AVFoundation.h>
 #import "Song.h"
 #import "AppDelegate.h"
 #import <Firebase/Firebase.h>
 #import "ToastViewController.h"
-#import "GetURLViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -30,9 +30,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property BOOL isPlayed;
 @property int secondsLeft;
 @property int secondsDone;
+@property int isLike;
 
 @property NSTimer *timeOfSession;
-@property (weak, nonatomic) IBOutlet FLAnimatedImageView *bgImageView;
+@property (weak, nonatomic) IBOutlet UIImageView *bgImageView;
 @property (weak, nonatomic) IBOutlet UILabel *remainingTimeLabel;
 
 @property (weak, nonatomic) IBOutlet UILabel *musicTitleLabel;
@@ -48,12 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) NSFileManager *fileManager;
 @property (nonatomic) NSString *writablePath;
 @property (nonatomic) NSString *theFileName;
-@property (nonatomic) NSString *csvEmotionURL;
-
-@property (strong, nonatomic) GetURLViewController *refCSVModalController;
-
-@property (weak, nonatomic) IBOutlet UIButton *ProcessMeditation;
-- (IBAction)ProcessAction:(id)sender;
+- (void)processRecommend;
 
 @end
 
